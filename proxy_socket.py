@@ -6,12 +6,15 @@ import time
 from logger import logger
 
 class ProxySocket:
+    '''use to create a server/client socket, support using "with""'''
     
     def __init__(self, host=None, port=None, block=False, is_server=False, existed_socket=None):
+        '''existed_socket allow you to wrap a socket using this class'''
         self._host = host
         self._port = port
         self._is_block = block
         self._is_server = is_server
+        
         if existed_socket: 
             logger.debug("Inherit from a existed socket: {0}".format(host))
             self._socket = existed_socket
@@ -26,6 +29,7 @@ class ProxySocket:
             self.shutdown()
 
     def connect(self):
+        '''return a ProxySocket object'''
         if self._is_server : return None
         
         try:
@@ -33,8 +37,7 @@ class ProxySocket:
             self._socket.setblocking(self._is_block)
             return self
         except Exception as e:
-            logger.error("FAIL to connect to {0}, msg {1}"
-                                .format(self._host,repr(e)))
+            logger.error("FAIL to connect to {0}, msg {1}".format(self._host,repr(e)))
             self.shutdown()
             return None
     
@@ -93,6 +96,7 @@ class ProxySocket:
             return False
     
     def recv(self):
+        resp = None
         try:
             # resp = b''
             # while True:
@@ -100,6 +104,7 @@ class ProxySocket:
             #     tmp = self._socket.recv(1024*2)
             #     if not tmp: break
             #     resp += tmp
+            # if return a b'', that mean connection closed by peer
             resp = self._socket.recv(1024*2)
         except BlockingIOError as e:
             logger.debug("not ready to read from {0}, msg: {1}".format(self._host,repr(e)))
