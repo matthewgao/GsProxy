@@ -6,9 +6,11 @@ import time
 from logger import logger
 from proxy_socket import ProxySocket
 from select import poll,POLLIN
-# 1. youku not work
-# 2. weibo not work
-# 3. cost lots of cpu
+# 1. pan.baidu.com will perodically timeout.
+# 2. poll timeout
+# 3. use memoryview to buffer recv_info
+# 4. thread pool 
+
 # 4. FIN_WAIT and CLOSE_WAIT
 
 g_count = 0    
@@ -16,6 +18,7 @@ g_count = 0
 def find_host(data):
     logger.debug("searching host from %s", data)
     try:
+        #FIXME need to prevent this xxxx:443
         regx_host = re.compile(b'(?<=\r\nHost:).*\r\n')
         target_host = regx_host.search(data).group(0).decode()
     except Exception:
@@ -60,7 +63,11 @@ def process(conn):
                 global g_count
                 g_count += len(recv)
                 # logger.info("PROCESS %sMB data", (g_count/1024/1024))
-                
+                # IF return None means not ready, then continue
+                if recv == None:
+                    continue
+
+                # IF return b'', means connection close by peer. set ok = False
                 if recv == b'':
                     logger.debug("Recv null message, break")
                     ok = False
