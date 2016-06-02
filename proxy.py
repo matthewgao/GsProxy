@@ -60,14 +60,15 @@ def process(conn):
                 
                 recv = fd_map[ready_fd].recv()
                 
+                if recv == None:
+                    continue
+                
                 global g_count
                 g_count += len(recv)
                 # logger.info("PROCESS %sMB data", (g_count/1024/1024))
                 # IF return None means not ready, then continue
-                if recv == None:
-                    continue
-
                 # IF return b'', means connection close by peer. set ok = False
+                
                 if recv == b'':
                     logger.debug("Recv null message, break")
                     ok = False

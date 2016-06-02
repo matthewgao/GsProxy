@@ -96,7 +96,7 @@ class ProxySocket:
             return False
     
     def recv(self):
-        resp = None
+        resp = b''
         try:
             # resp = b''
             # while True:
