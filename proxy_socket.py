@@ -83,20 +83,20 @@ class ProxySocket:
             logger.debug("not ready to read from {0}, msg: {1}".format(self._host,repr(e)))
             return True
         except TimeoutError as e:
-            logger.debug("{1} while sending to {0}, msg: ".format(self._host,repr(e)))
+            logger.error("{1} while sending to {0}, msg: ".format(self._host,repr(e)))
             return True
         except ConnectionResetError as e: 
-            logger.debug("Connection reseted while sending to {0}, msg: {1}".format(self._host,repr(e)))
+            logger.error("Connection reseted while sending to {0}, msg: {1}".format(self._host,repr(e)))
             return False
         except BrokenPipeError as e:
-            logger.debug("BrokenPipeError while sending to {0}, msg: {1}".format(self._host,repr(e)))
+            logger.error("BrokenPipeError while sending to {0}, msg: {1}".format(self._host,repr(e)))
             return False
         except OSError as e:
-            logger.debug("OSError while sending to {0}, msg: {1}".format(self._host,repr(e)))
+            logger.error("OSError while sending to {0}, msg: {1}".format(self._host,repr(e)))
             return False
     
     def recv(self):
-        resp = None
+        resp = b''
         try:
             # resp = b''
             # while True:
@@ -105,17 +105,18 @@ class ProxySocket:
             #     if not tmp: break
             #     resp += tmp
             # if return a b'', that mean connection closed by peer
-            resp = self._socket.recv(1024*2)
+            resp = self._socket.recv(4096)
         except BlockingIOError as e:
             logger.debug("not ready to read from {0}, msg: {1}".format(self._host,repr(e)))
+            return None
         except ConnectionResetError as e: 
             logger.debug("Connection reseted while read from {0}, msg: {1}".format(self._host,repr(e)))
         except BrokenPipeError as e:
-            logger.debug("BrokenPipeError while read from {0}, msg: {1}".format(self._host,repr(e)))
+            logger.error("BrokenPipeError while read from {0}, msg: {1}".format(self._host,repr(e)))
         except TimeoutError as e:
-            logger.debug("{1} while read from {0}, msg: ".format(self._host,repr(e)))
+            logger.error("{1} while read from {0}, msg: ".format(self._host,repr(e)))
         except OSError as e:
-            logger.debug("OSError while read from {0}, msg: {1}".format(self._host,repr(e)))
+            logger.error("OSError while read from {0}, msg: {1}".format(self._host,repr(e)))
         finally:
             return resp
     @property

@@ -2,7 +2,7 @@
 import logging
 
 FORMAT = '%(asctime)-15s %(message)s'
-logging.basicConfig(format=FORMAT,level=logging.INFO)
+logging.basicConfig(filename="log.log",format=FORMAT,level=logging.INFO)
 logger = logging.getLogger('httpproxy')
 
 if __name__ == "__main__":
