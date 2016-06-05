@@ -1,41 +1,17 @@
 #! /usr/bin/env python3
-import socket
-import re
+
 import _thread
-import time
 from logger import logger
 from proxy_socket import ProxySocket
 from select import poll,POLLIN
+from util import find_host
+# import asyncio
 # 1. youku not work
 # 2. weibo not work
 # 3. cost lots of cpu
 # 4. FIN_WAIT and CLOSE_WAIT
 
 g_count = 0    
-
-def find_host(data):
-    logger.debug("searching host from %s", data)
-    try:
-        regx_host = re.compile(b'(?<=\r\nHost:).*\r\n')
-        target_host = regx_host.search(data).group(0).decode()
-    except Exception:
-        return None
-    logger.debug("Found a host %s", target_host)
-    
-    return target_host.strip()
-    
-def find_connection(data):
-    regx_connection = re.compile(b'(?<=\r\nConnection:).*\r\n')
-    re_result = regx_connection.search(data)
-    ret = None
-    
-    if re_result:
-        try:
-            ret = re_result.group(0).decode().strip()
-            # print("CLOSE", ret)
-        except Exception as e:
-            print("FAIL to find connection from HEADER {0}, msg {1}".format(ret, repr(e)))
-    return ret
     
 def process(conn):
     with conn as conn:
@@ -56,7 +32,7 @@ def process(conn):
                 if not (event & POLLIN): continue
                 
                 recv = fd_map[ready_fd].recv()
-                
+                # print(recv)
                 global g_count
                 g_count += len(recv)
                 # logger.info("PROCESS %sMB data", (g_count/1024/1024))
@@ -89,7 +65,8 @@ def process(conn):
             if not ok: break
         
         if forward_server: forward_server.shutdown()        
-    
+
+
 if __name__ == "__main__":
     with ProxySocket.get_server("0.0.0.0", 50007) as server:
         server.listen()
@@ -97,3 +74,4 @@ if __name__ == "__main__":
             conn = server.start_accept()
             if not conn: break
             _thread.start_new_thread( process, (conn, ) )
+    
